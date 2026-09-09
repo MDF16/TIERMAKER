@@ -1,7 +1,7 @@
 {
   "name": "My Apps Hub",
   "short_name": "Apps Hub",
-  "start_url": "./Tiermaker_v2.html",
+  "start_url": "./Tiermaker%20v2.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

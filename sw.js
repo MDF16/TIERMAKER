@@ -1,6 +1,6 @@
 const CACHE_NAME = 'apps-hub-cache-v1';
 const CORE_ASSETS = [
-  './Tiermaker_v2.html',
+  './Tiermaker%20v2.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
