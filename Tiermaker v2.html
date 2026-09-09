@@ -96,6 +96,37 @@
         }
         #snapPanel.hiding { animation: snapPanelOut 0.2s ease forwards; }
 
+        /* ── لوحة اختيار مصدر الصورة ── */
+        #imgSrcPanel {
+            display: none;
+            position: fixed;
+            z-index: 7000;
+            background: linear-gradient(135deg, rgba(26,26,46,0.97) 0%, rgba(18,18,32,0.99) 100%);
+            border: 1px solid rgba(77,166,255,0.25);
+            border-radius: 16px;
+            padding: 18px;
+            width: 260px;
+            max-width: calc(100vw - 24px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 0 1px rgba(77,166,255,0.08) inset;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            flex-direction: column;
+            gap: 12px;
+        }
+        #imgSrcPanel.show { display: flex; animation: snapPanelIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        #imgSrcPanel.hiding { animation: snapPanelOut 0.18s ease forwards; }
+        #imgSrcChoices { display: flex; flex-direction: column; gap: 10px; }
+        .imgsrc-option-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            color: #eee;
+            padding: 12px 14px; border-radius: 10px;
+            cursor: pointer; font-size: 14px; font-weight: 600;
+            text-align: right;
+            transition: all 0.18s ease;
+        }
+        .imgsrc-option-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(77,166,255,0.08); }
+
         .snap-panel-title {
             font-size: 13px; font-weight: 700;
             color: #f59e0b;
@@ -1065,7 +1096,7 @@
         /* مودال الإضافة */
         .mod-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .mod-modal-overlay.show { display: flex; animation: fadeIn 0.25s ease; }
-        .mod-modal { background: #1e1e2a; border: 1px solid #333; border-radius: 16px; padding: 28px; width: 90%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .mod-modal { background: #1e1e2a; border: 1px solid #333; border-radius: 16px; padding: 28px; width: 90%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-height: 88vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .mod-modal h3 { margin: 0 0 20px; font-size: 20px; color: #e0e0e0; }
         .mod-modal input { width: 100%; padding: 12px 14px; background: #252535; border: 1px solid #333; border-radius: 8px; color: white; font-size: 15px; outline: none; box-sizing: border-box; transition: border-color 0.2s; }
         .mod-modal input:focus { border-color: #7c3aed; }
@@ -1406,7 +1437,9 @@
         <div class="toolbar">
             <button class="btn btn-back-menu" onclick="goBackToCategories()">← رجوع</button>
             <span id="tmActiveCatLabel">🎮 عام</span>
-            <label class="btn">📷 صور<input type="file" id="imageInput" multiple accept="image/*" hidden></label>
+            <button class="btn" id="imgSrcBtn" onclick="toggleImgSrcPanel(event)">📷 صور</button>
+            <button class="btn" onclick="addImageByLinkPrompt()">🔗 رابط صورة</button>
+            <input type="file" id="imageInput" multiple accept="image/*" hidden>
             <button class="btn btn-search" onclick="openSearchModal()">🔍 بحث</button>
             <button class="btn" onclick="addTier()">➕ خانة</button>
             <button class="btn btn-undo" onclick="undo()" id="undoBtn" disabled>↩️</button>
@@ -1807,6 +1840,29 @@
 <div id="toast" class="toast">تم</div>
 
 <!-- ══ Snap Panel (خيارات الالتقاط) ══ -->
+<!-- ══ لوحة اختيار مصدر الصورة (رفع / رابط) ══ -->
+<div id="imgSrcPanel">
+    <div class="snap-panel-title">🖼️ إضافة صورة</div>
+    <div id="imgSrcChoices">
+        <button type="button" class="imgsrc-option-btn" onclick="chooseImgSrcUpload()">
+            📤 رفع من الجهاز
+        </button>
+        <button type="button" class="imgsrc-option-btn" onclick="chooseImgSrcLink()">
+            🔗 رابط الصورة (URL)
+        </button>
+    </div>
+    <div id="imgSrcLinkForm" style="display:none;">
+        <label class="snap-panel-label">الصق رابط الصورة</label>
+        <input type="url" id="imgSrcLinkInput" class="snap-tier-picker" style="display:block;" placeholder="https://..." onkeypress="if(event.key==='Enter') confirmImgSrcLink()">
+        <div class="snap-panel-footer" style="margin-top:10px;">
+            <button type="button" class="snap-do-btn" onclick="confirmImgSrcLink()">
+                <span class="snap-btn-icon">✅</span><span class="snap-btn-spinner"></span> إضافة
+            </button>
+            <button type="button" class="snap-cancel-link" onclick="_imgSrcBackToChoices()">رجوع</button>
+        </div>
+    </div>
+</div>
+
 <div id="snapPanel">
     <div class="snap-panel-title">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -4259,6 +4315,68 @@ function handleImageUpload(e) {
     }
     e.target.value = '';
 }
+/* ─────────────────────────────────────────────
+   لوحة اختيار مصدر الصورة (رفع / رابط)
+   ───────────────────────────────────────────── */
+function toggleImgSrcPanel(e) {
+    e.stopPropagation();
+    const panel = document.getElementById('imgSrcPanel');
+    const btn   = document.getElementById('imgSrcBtn');
+    if (panel.classList.contains('show')) { _imgSrcHide(); return; }
+    // إعادة الضبط لوضع الاختيار الأساسي
+    document.getElementById('imgSrcChoices').style.display = 'flex';
+    document.getElementById('imgSrcLinkForm').style.display = 'none';
+    document.getElementById('imgSrcLinkInput').value = '';
+    const rect = btn.getBoundingClientRect();
+    const panelWidth = 260;
+    let left = rect.left;
+    left = Math.max(8, Math.min(left, window.innerWidth - panelWidth - 8));
+    let top = rect.bottom + 8;
+    panel.style.left = left + 'px';
+    panel.style.top  = top + 'px';
+    panel.classList.remove('hiding');
+    panel.classList.add('show');
+}
+function _imgSrcHide() {
+    const panel = document.getElementById('imgSrcPanel');
+    panel.classList.add('hiding');
+    setTimeout(() => { panel.classList.remove('show', 'hiding'); }, 180);
+}
+function _imgSrcBackToChoices() {
+    document.getElementById('imgSrcChoices').style.display = 'flex';
+    document.getElementById('imgSrcLinkForm').style.display = 'none';
+}
+function chooseImgSrcUpload() {
+    _imgSrcHide();
+    document.getElementById('imageInput').click();
+}
+function chooseImgSrcLink() {
+    document.getElementById('imgSrcChoices').style.display = 'none';
+    document.getElementById('imgSrcLinkForm').style.display = 'block';
+    setTimeout(() => document.getElementById('imgSrcLinkInput').focus(), 50);
+}
+function confirmImgSrcLink() {
+    const url = document.getElementById('imgSrcLinkInput').value.trim();
+    if (!url) { showToast('⚠️ الصق رابط الصورة أولاً'); return; }
+    _imgSrcHide();
+    openAddModal(url, '');
+}
+document.addEventListener('mousedown', (e) => {
+    const panel = document.getElementById('imgSrcPanel');
+    const btn   = document.getElementById('imgSrcBtn');
+    if (panel && panel.classList.contains('show') && !panel.contains(e.target) && e.target !== btn) {
+        _imgSrcHide();
+    }
+});
+
+function addImageByLinkPrompt() {
+    const url = prompt('الصق رابط الصورة (URL):', '');
+    if (!url) return;
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    openAddModal(trimmed, '');
+}
+
 function addTier() { const id = 'tier-' + Math.random().toString(16).slice(2); data.tiers.push({ id: id, name: 'New', color: '#808080' }); renderTierMaker(); saveState(); saveLocally(false); }
 function deleteTier(id) { if(!confirm("هل أنت متأكد؟")) return; data.items.forEach(item => { if (item.tierId === id) item.tierId = null; }); data.tiers = data.tiers.filter(t => t.id !== id); renderTierMaker(); saveState(); saveLocally(false); }
 function updateTierName(id, name) { let t = data.tiers.find(x => x.id === id); if(t) t.name = name; saveState(); saveLocally(false); }
