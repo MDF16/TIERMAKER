@@ -1591,6 +1591,7 @@
         .wheel-import-row .btn, .wheel-import-row label.btn { flex: 1; justify-content: center; font-size: 13px; padding: 10px 12px; }
         .wheel-btn-txt { background: linear-gradient(145deg, #6c757d, #565c63); }
         .wheel-btn-shuffle { background: linear-gradient(145deg, #4da6ff, #3d8ad8); }
+        .wheel-btn-json { background: linear-gradient(145deg, #20c997, #17a087); }
         .wheel-btn-clear { background: linear-gradient(145deg, #dc3545, #b02a37); }
         .wheel-btn-save { background: linear-gradient(145deg, #28a745, #1e7e34); }
 
@@ -2201,6 +2202,7 @@
                     <div class="wheel-import-row" style="margin-top:8px;">
                         <label class="btn wheel-btn-txt">📁 ملف TXT<input type="file" id="wheelTxtInput" accept=".txt,text/plain" hidden onchange="importWheelTxtFile(this)"></label>
                         <button class="btn wheel-btn-txt" onclick="openWheelPasteModal()">📋 لصق نص</button>
+                        <label class="btn wheel-btn-json">📥 استيراد JSON<input type="file" id="wheelJsonInput" accept=".json,application/json" hidden onchange="importWheelJsonFile(this)"></label>
                     </div>
                 </div>
 
@@ -2208,6 +2210,7 @@
                     <div class="wheel-panel-title">📝 العناصر</div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button class="btn wheel-btn-shuffle" onclick="shuffleWheelItems()" title="ترتيب عشوائي للعناصر">🔀 خربطة</button>
+                        <button class="btn wheel-btn-json" onclick="exportWheelItemsJson()" title="تصدير عناصر هذا القسم كملف JSON">📤 تصدير JSON</button>
                         <button class="btn wheel-btn-save" onclick="saveWheelData(true)">💾 حفظ</button>
                         <button class="btn wheel-btn-clear" onclick="clearWheelItems()">🗑️ مسح الكل</button>
                     </div>
@@ -5969,6 +5972,66 @@ function importWheelTxtFile(inputEl) {
     const reader = new FileReader();
     reader.onload = (e) => {
         _wheelImportLines(e.target.result);
+        inputEl.value = '';
+    };
+    reader.onerror = () => {
+        showToast('⚠️ تعذّرت قراءة الملف');
+        inputEl.value = '';
+    };
+    reader.readAsText(file, 'utf-8');
+}
+
+// ── تصدير عناصر القسم النشط كملف JSON ──
+function exportWheelItemsJson() {
+    const cat = _wheelActiveCategory();
+    if (!cat || !cat.items.length) {
+        showToast('⚠️ لا توجد عناصر لتصديرها');
+        return;
+    }
+    const payload = {
+        category: cat.name,
+        icon: cat.icon,
+        exportedAt: new Date().toISOString(),
+        items: cat.items.map(it => ({ name: it.name, color: it.color }))
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const safeName = (cat.name || 'wheel').replace(/[\\/:*?"<>|]/g, '_');
+    a.download = `عجلة-${safeName}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('📤 تم تصدير العناصر');
+}
+
+// ── استيراد عناصر من ملف JSON ──
+function importWheelJsonFile(inputEl) {
+    const file = inputEl.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        let names = [];
+        try {
+            const data = JSON.parse(e.target.result);
+            const arr = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : null);
+            if (!arr) throw new Error('صيغة غير مدعومة');
+            names = arr
+                .map(entry => typeof entry === 'string' ? entry : (entry && typeof entry.name === 'string' ? entry.name : null))
+                .filter(n => n && n.trim());
+        } catch (err) {
+            showToast('⚠️ ملف JSON غير صالح');
+            inputEl.value = '';
+            return;
+        }
+        if (!names.length) {
+            showToast('⚠️ لا توجد عناصر صالحة في الملف');
+            inputEl.value = '';
+            return;
+        }
+        _wheelImportLines(names.join('\n'));
         inputEl.value = '';
     };
     reader.onerror = () => {
