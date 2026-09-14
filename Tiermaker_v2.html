@@ -47,7 +47,7 @@
         #main-menu-screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; min-height: 100vh; background: radial-gradient(circle at top right, #1a2a3a 0%, #0f0f0f 100%); animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
         #app-tiermaker.active, #app-tiermaker-categories.active { display: block; animation: ultraSmoothEntry 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
         #app-modmanager.active, #app-modmanager-mods.active, #app-modmanager-workspace.active { display: block; animation: ultraSmoothEntry 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        #app-wheel.active { display: block; animation: ultraSmoothEntry 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        #app-wheel.active, #app-wheel-categories.active { display: block; animation: ultraSmoothEntry 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
         .hub-title { font-size: 32px; font-weight: 300; color: #888; margin-bottom: 50px; letter-spacing: 4px; text-transform: uppercase; }
         .hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; width: 100%; max-width: 900px; }
@@ -823,6 +823,17 @@
             backdrop-filter: blur(7px);
         }
         #modalAddCategory.show { display: flex; }
+        #modalAddWheelCategory {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.82);
+            z-index: 5500;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(7px);
+        }
+        #modalAddWheelCategory.show { display: flex; }
         .cat-modal-box {
             background: #1e1e1e;
             border: 1px solid #333;
@@ -915,6 +926,15 @@
             transition: all 0.2s;
         }
         .tm-cat-card:hover .delete-card-btn { display: flex; }
+        .tm-cat-card .edit-card-btn {
+            position: absolute; top: 8px; left: 36px;
+            background: #4da6ff; border: none; color: white;
+            width: 22px; height: 22px; border-radius: 50%;
+            cursor: pointer; font-size: 11px; line-height: 1;
+            display: none; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .tm-cat-card:hover .edit-card-btn { display: flex; }
 
         /* شارة اسم القسم النشط داخل Toolbar مساحة العمل */
         #tmActiveCatLabel {
@@ -1574,6 +1594,30 @@
         .wheel-btn-clear { background: linear-gradient(145deg, #dc3545, #b02a37); }
         .wheel-btn-save { background: linear-gradient(145deg, #28a745, #1e7e34); }
 
+        .wheel-search-row {
+            position: relative;
+            display: flex; align-items: center;
+        }
+        .wheel-search-icon {
+            position: absolute; right: 12px; font-size: 13px; opacity: 0.55; pointer-events: none;
+        }
+        .wheel-search-row input {
+            width: 100%; box-sizing: border-box;
+            padding: 10px 38px 10px 34px;
+            background: #2a2a2a; border: 1px solid #3a3a3a; color: white;
+            border-radius: 9px; font-size: 13.5px; outline: none; transition: border-color 0.2s;
+        }
+        .wheel-search-row input:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+        .wheel-search-clear {
+            position: absolute; left: 8px;
+            background: none; border: none; color: #888; cursor: pointer; font-size: 13px;
+            padding: 4px 7px; border-radius: 6px; transition: all 0.15s ease;
+        }
+        .wheel-search-clear:hover { color: #ff6b6b; background: rgba(220,53,69,0.15); }
+        .wheel-search-empty {
+            text-align: center; color: #777; font-size: 13px; padding: 14px 8px;
+        }
+
         .wheel-items-list {
             display: flex; flex-direction: column; gap: 7px;
             max-height: 340px; overflow-y: auto; padding-left: 2px; padding-right: 2px;
@@ -1589,11 +1633,22 @@
         .wheel-item-row:hover { background: #303030; border-color: #4a4a4a; transform: translateX(-2px); }
         .wheel-item-swatch { width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 0 6px currentColor; }
         .wheel-item-name { flex: 1; font-size: 13.5px; word-break: break-word; }
+        .wheel-item-edit {
+            background: none; border: none; color: #888; cursor: pointer; font-size: 13px;
+            padding: 3px 7px; border-radius: 6px; transition: all 0.15s ease; flex-shrink: 0;
+        }
+        .wheel-item-edit:hover { color: #4da6ff; background: rgba(77,166,255,0.15); }
         .wheel-item-del {
             background: none; border: none; color: #888; cursor: pointer; font-size: 15px;
-            padding: 3px 7px; border-radius: 6px; transition: all 0.15s ease;
+            padding: 3px 7px; border-radius: 6px; transition: all 0.15s ease; flex-shrink: 0;
         }
         .wheel-item-del:hover { color: #ff6b6b; background: rgba(220,53,69,0.15); }
+        .wheel-item-row.editing { background: #303030; border-color: #f59e0b; }
+        .wheel-item-edit-input {
+            flex: 1; min-width: 0; font-size: 13.5px; font-family: inherit;
+            background: #1e1e1e; border: 1px solid #f59e0b; color: white;
+            border-radius: 6px; padding: 5px 9px; outline: none;
+        }
         .wheel-count-badge {
             font-size: 12px; color: #fbbf24; background: rgba(245,158,11,0.12);
             border: 1px solid rgba(245,158,11,0.3); padding: 5px 12px; border-radius: 20px; font-weight: 600;
@@ -2086,13 +2141,36 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
+     === شاشة أقسام عجلة الحظ (Wheel Categories) =============
+     ══════════════════════════════════════════════════════════ -->
+<div id="app-wheel-categories" class="screen">
+    <div class="mod-container">
+        <div class="mod-page-header">
+            <button class="btn btn-back-menu" onclick="goToMenu()">🏠 القائمة</button>
+            <h1>🎡 عجلة الحظ</h1>
+            <button class="btn" onclick="showAddWheelCategoryModal()"
+                style="background:linear-gradient(145deg,#f59e0b,#d97706);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                إضافة قسم
+            </button>
+        </div>
+        <div id="wheel-categories-grid" class="mod-grid"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
      === شاشة عجلة الحظ (Wheel of Fortune) ===================
      ══════════════════════════════════════════════════════════ -->
 <div id="app-wheel" class="screen">
     <div class="mod-container">
         <div class="mod-page-header">
-            <button class="btn btn-back-menu" onclick="goToMenu()">🏠 القائمة</button>
-            <h1>🎡 عجلة الحظ</h1>
+            <button class="btn btn-back-menu" onclick="goBackToWheelCategories()">← رجوع</button>
+            <h1 id="wheelActiveCatLabel">🎡 عجلة الحظ</h1>
             <span class="wheel-count-badge" id="wheelCountBadge">0 عنصر</span>
         </div>
 
@@ -2134,7 +2212,13 @@
                         <button class="btn wheel-btn-clear" onclick="clearWheelItems()">🗑️ مسح الكل</button>
                     </div>
                 </div>
+                <div class="wheel-search-row">
+                    <span class="wheel-search-icon">🔎</span>
+                    <input type="text" id="wheelSearchInput" placeholder="ابحث عن عنصر..." oninput="filterWheelItems(this.value)">
+                    <button class="wheel-search-clear" id="wheelSearchClearBtn" onclick="clearWheelSearch()" style="display:none;" title="مسح البحث">✕</button>
+                </div>
                 <div class="wheel-items-list" id="wheelItemsList"></div>
+                <div class="wheel-search-empty" id="wheelSearchEmpty" style="display:none;">لا توجد عناصر مطابقة للبحث</div>
             </div>
         </div>
     </div>
@@ -2431,6 +2515,7 @@ function cleanupScreen(leavingScreenId) {
         }
         if (typeof wheelIsSpinning !== 'undefined') wheelIsSpinning = false;
         closeWheelResultModal();
+        if (typeof clearWheelSearch === 'function') clearWheelSearch();
     }
 }
 
@@ -2531,10 +2616,8 @@ async function openApp(appName) {
         showScreen('app-modmanager');
     } else if (appName === 'wheel') {
         await loadWheelData();
-        renderWheelItemsList();
-        showScreen('app-wheel');
-        // نرسم بعد ظهور الشاشة فعلياً حتى تُقرأ أبعاد الـ canvas بشكل صحيح
-        requestAnimationFrame(() => requestAnimationFrame(drawWheel));
+        renderWheelCategories();
+        showScreen('app-wheel-categories');
     }
 }
 
@@ -2569,6 +2652,7 @@ function renderTierCategories() {
             <div class="cat-card-icon">${cat.icon}</div>
             <div class="cat-card-name">${escapeHtml(cat.name)}</div>
             <div class="cat-card-count">${itemCount} عنصر · ${tierCount} خانة</div>
+            <button class="edit-card-btn" title="تعديل القسم">✏️</button>
             <button class="delete-card-btn" title="حذف القسم">✕</button>`;
 
         // فتح القسم عند النقر
@@ -2576,6 +2660,11 @@ function renderTierCategories() {
             if (e.target.closest('.delete-card-btn')) {
                 e.stopPropagation();
                 deleteCategoryById(cat.id);
+                return;
+            }
+            if (e.target.closest('.edit-card-btn')) {
+                e.stopPropagation();
+                showEditCategoryModal(cat.id);
                 return;
             }
             openTierCategory(cat.id);
@@ -4397,9 +4486,14 @@ function renderCategoryBar() { renderTierCategories(); }
 // ── مودال إضافة قسم ──────────────────────────────────────────
 let _selectedCatEmoji = '🎮';
 
+let _editingCatId = null;
+
 function showAddCategoryModal() {
+    _editingCatId = null;
     _selectedCatEmoji = '🎮';
     document.getElementById('catModalName').value = '';
+    document.getElementById('catModalTitle').textContent = '📂 إضافة قسم جديد';
+    document.getElementById('catModalConfirmBtn').textContent = '✅ إضافة';
     document.querySelectorAll('#catEmojiRow span').forEach(s => s.classList.remove('selected'));
     const first = document.querySelector('#catEmojiRow span');
     if (first) first.classList.add('selected');
@@ -4407,8 +4501,24 @@ function showAddCategoryModal() {
     setTimeout(() => document.getElementById('catModalName').focus(), 100);
 }
 
+function showEditCategoryModal(catId) {
+    const cat = tierData.categories.find(c => c.id === catId);
+    if (!cat) return;
+    _editingCatId = catId;
+    _selectedCatEmoji = cat.icon;
+    document.getElementById('catModalName').value = cat.name;
+    document.getElementById('catModalTitle').textContent = '✏️ تعديل القسم';
+    document.getElementById('catModalConfirmBtn').textContent = '💾 حفظ التعديل';
+    document.querySelectorAll('#catEmojiRow span').forEach(s => {
+        s.classList.toggle('selected', s.textContent.trim() === cat.icon);
+    });
+    document.getElementById('modalAddCategory').classList.add('show');
+    setTimeout(() => document.getElementById('catModalName').focus(), 100);
+}
+
 function closeAddCategoryModal() {
     document.getElementById('modalAddCategory').classList.remove('show');
+    _editingCatId = null;
 }
 
 function selectCatEmoji(el) {
@@ -4420,6 +4530,23 @@ function selectCatEmoji(el) {
 function confirmAddCategory() {
     const name = document.getElementById('catModalName').value.trim();
     if (!name) { document.getElementById('catModalName').focus(); return; }
+
+    // ── وضع التعديل: تحديث قسم موجود بدلاً من إنشاء واحد جديد ──
+    if (_editingCatId) {
+        const cat = tierData.categories.find(c => c.id === _editingCatId);
+        if (cat) {
+            cat.name = name;
+            cat.icon = _selectedCatEmoji;
+            if (tierData.activeCategoryId === cat.id) _updateActiveCatLabel();
+        }
+        _editingCatId = null;
+        closeAddCategoryModal();
+        renderTierCategories();
+        saveLocally(false);
+        showToast(`✅ تم تحديث قسم "${name}"`);
+        return;
+    }
+
     syncDataToCategory();
     const newCat = _defaultCategory(name, _selectedCatEmoji);
     tierData.categories.push(newCat);
@@ -5425,13 +5552,27 @@ const WHEEL_COLORS = [
     '#ffc107', '#dc3545'
 ];
 
-let wheelData = { items: [] };   // [{id, name, color}]
+/**
+ * هيكل بيانات عجلة الحظ:
+ * categories : مصفوفة الأقسام، كل قسم = {id, name, icon, items:[{id,name,color}]}
+ * activeCategoryId : معرّف القسم المفتوح حالياً في مساحة العمل
+ */
+let wheelData = { categories: [], activeCategoryId: null };
 let wheelCurrentRotation = 0;    // آخر زاوية توقفت عندها العجلة (بالدرجات)
 let wheelIsSpinning = false;
 
 function _wheelUid() { return 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
 function _wheelColorFor(index) { return WHEEL_COLORS[index % WHEEL_COLORS.length]; }
+
+function _wheelDefaultCategory(name = 'عام', icon = '🎡', items = []) {
+    return { id: 'wcat-' + Math.random().toString(16).slice(2), name, icon, items };
+}
+
+/** يرجع القسم النشط حالياً (الكائن نفسه بالمرجع، للتعديل المباشر) */
+function _wheelActiveCategory() {
+    return wheelData.categories.find(c => c.id === wheelData.activeCategoryId) || null;
+}
 
 function _wheelLighten(hex, percent) {
     // يفتّح لون HEX بنسبة معينة لصنع تدرّج شعاعي على كل قطعة
@@ -5450,14 +5591,27 @@ async function loadWheelData() {
     try {
         await migrateFromLS('wheel_data', IDB_WHEEL_KEY);
         const saved = await localforage.getItem(IDB_WHEEL_KEY);
-        if (saved && Array.isArray(saved.items)) {
+        if (saved && Array.isArray(saved.categories) && saved.categories.length) {
+            // الصيغة الجديدة (بالأقسام) موجودة مسبقاً
             wheelData = saved;
-        } else if (!wheelData.items.length) {
-            wheelData = { items: [] };
+            if (!wheelData.activeCategoryId || !wheelData.categories.find(c => c.id === wheelData.activeCategoryId)) {
+                wheelData.activeCategoryId = wheelData.categories[0].id;
+            }
+        } else if (saved && Array.isArray(saved.items)) {
+            // ترحيل تلقائي من الصيغة القديمة (بدون أقسام) إلى قسم افتراضي "عام"
+            const defaultCat = _wheelDefaultCategory('عام', '🎡', saved.items);
+            wheelData = { categories: [defaultCat], activeCategoryId: defaultCat.id };
+            await saveWheelData(false);
+        } else if (!wheelData.categories.length) {
+            const defaultCat = _wheelDefaultCategory('عام', '🎡', []);
+            wheelData = { categories: [defaultCat], activeCategoryId: defaultCat.id };
         }
     } catch (err) {
         console.warn('[Wheel] فشل تحميل البيانات:', err);
-        wheelData = wheelData.items ? wheelData : { items: [] };
+        if (!wheelData.categories || !wheelData.categories.length) {
+            const defaultCat = _wheelDefaultCategory('عام', '🎡', []);
+            wheelData = { categories: [defaultCat], activeCategoryId: defaultCat.id };
+        }
     }
 }
 
@@ -5471,37 +5625,255 @@ async function saveWheelData(showFeedback) {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// ═══════════════  أقسام عجلة الحظ (Wheel Categories)  ═══════════════
+// ═══════════════════════════════════════════════════════════════════
+
+function renderWheelCategories() {
+    const grid = document.getElementById('wheel-categories-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    wheelData.categories.forEach(cat => {
+        const itemCount = (cat.items || []).length;
+
+        const card = document.createElement('div');
+        card.className = 'tm-cat-card';
+        card.dataset.catId = cat.id;
+        card.innerHTML = `
+            <div class="cat-card-icon">${cat.icon}</div>
+            <div class="cat-card-name"></div>
+            <div class="cat-card-count">${itemCount} عنصر</div>
+            <button class="edit-card-btn" title="تعديل القسم">✏️</button>
+            <button class="delete-card-btn" title="حذف القسم">✕</button>`;
+        card.querySelector('.cat-card-name').textContent = cat.name;
+
+        // فتح القسم عند النقر
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-card-btn')) {
+                e.stopPropagation();
+                deleteWheelCategoryById(cat.id);
+                return;
+            }
+            if (e.target.closest('.edit-card-btn')) {
+                e.stopPropagation();
+                showEditWheelCategoryModal(cat.id);
+                return;
+            }
+            openWheelCategory(cat.id);
+        });
+
+        grid.appendChild(card);
+    });
+
+    // بطاقة "إضافة قسم جديد"
+    const addCard = document.createElement('div');
+    addCard.className = 'mod-add-card';
+    addCard.innerHTML = `<div class="add-icon">＋</div><span>قسم جديد</span>`;
+    addCard.onclick = () => showAddWheelCategoryModal();
+    grid.appendChild(addCard);
+}
+
+/** يفتح قسماً محدداً ويعرض مساحة عمل العجلة الخاصة به */
+function openWheelCategory(catId) {
+    wheelData.activeCategoryId = catId;
+    saveWheelData(false);
+    wheelSearchTerm = '';
+    wheelCurrentRotation = 0;
+    _wheelUpdateActiveCatLabel();
+    renderWheelItemsList();
+    showScreen('app-wheel');
+    const canvas = document.getElementById('wheelCanvas');
+    if (canvas) canvas.style.transform = 'rotate(0deg)';
+    // نرسم بعد ظهور الشاشة فعلياً حتى تُقرأ أبعاد الـ canvas بشكل صحيح
+    requestAnimationFrame(() => requestAnimationFrame(drawWheel));
+}
+
+/** يُحدّث شارة اسم القسم النشط أعلى مساحة العمل */
+function _wheelUpdateActiveCatLabel() {
+    const label = document.getElementById('wheelActiveCatLabel');
+    if (!label) return;
+    const cat = _wheelActiveCategory();
+    label.textContent = cat ? `${cat.icon} ${cat.name}` : '🎡 عجلة الحظ';
+}
+
+/** العودة من مساحة العمل إلى شاشة أقسام العجلة */
+function goBackToWheelCategories() {
+    saveWheelData(false);
+    renderWheelCategories();
+    showScreen('app-wheel-categories');
+}
+
+/** حذف قسم بمعرّفه من شاشة الأقسام */
+function deleteWheelCategoryById(catId) {
+    if (wheelData.categories.length <= 1) {
+        showToast('⚠️ لا يمكن حذف القسم الوحيد');
+        return;
+    }
+    const cat = wheelData.categories.find(c => c.id === catId);
+    if (!cat) return;
+    if (!confirm(`⚠️ حذف قسم "${cat.name}"؟\nسيتم حذف جميع عناصره نهائياً.`)) return;
+
+    const idx = wheelData.categories.findIndex(c => c.id === catId);
+    wheelData.categories.splice(idx, 1);
+
+    // إذا كان هو القسم النشط، انتقل للقسم المجاور
+    if (wheelData.activeCategoryId === catId) {
+        const nextIdx = Math.min(idx, wheelData.categories.length - 1);
+        wheelData.activeCategoryId = wheelData.categories[nextIdx].id;
+    }
+
+    saveWheelData(false);
+    renderWheelCategories();
+    showToast(`🗑️ تم حذف قسم "${cat.name}"`);
+}
+
+// ── مودال إضافة قسم جديد لعجلة الحظ ──
+let _selectedWheelCatEmoji = '🎡';
+let _editingWheelCatId = null;
+
+function showAddWheelCategoryModal() {
+    _editingWheelCatId = null;
+    _selectedWheelCatEmoji = '🎡';
+    const nameInput = document.getElementById('wheelCatModalName');
+    if (nameInput) nameInput.value = '';
+    const titleEl = document.getElementById('wheelCatModalTitle');
+    if (titleEl) titleEl.textContent = '🎡 إضافة قسم جديد';
+    const confirmBtn = document.getElementById('wheelCatModalConfirmBtn');
+    if (confirmBtn) confirmBtn.textContent = '✅ إضافة';
+    document.querySelectorAll('#wheelCatEmojiRow span').forEach(s => s.classList.remove('selected'));
+    const first = document.querySelector('#wheelCatEmojiRow span');
+    if (first) first.classList.add('selected');
+    document.getElementById('modalAddWheelCategory')?.classList.add('show');
+    setTimeout(() => document.getElementById('wheelCatModalName')?.focus(), 100);
+}
+
+function showEditWheelCategoryModal(catId) {
+    const cat = wheelData.categories.find(c => c.id === catId);
+    if (!cat) return;
+    _editingWheelCatId = catId;
+    _selectedWheelCatEmoji = cat.icon;
+    const nameInput = document.getElementById('wheelCatModalName');
+    if (nameInput) nameInput.value = cat.name;
+    const titleEl = document.getElementById('wheelCatModalTitle');
+    if (titleEl) titleEl.textContent = '✏️ تعديل القسم';
+    const confirmBtn = document.getElementById('wheelCatModalConfirmBtn');
+    if (confirmBtn) confirmBtn.textContent = '💾 حفظ التعديل';
+    document.querySelectorAll('#wheelCatEmojiRow span').forEach(s => {
+        s.classList.toggle('selected', s.textContent.trim() === cat.icon);
+    });
+    document.getElementById('modalAddWheelCategory')?.classList.add('show');
+    setTimeout(() => document.getElementById('wheelCatModalName')?.focus(), 100);
+}
+
+function closeAddWheelCategoryModal() {
+    document.getElementById('modalAddWheelCategory')?.classList.remove('show');
+    _editingWheelCatId = null;
+}
+
+function selectWheelCatEmoji(el) {
+    document.querySelectorAll('#wheelCatEmojiRow span').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    _selectedWheelCatEmoji = el.textContent.trim();
+}
+
+function confirmAddWheelCategory() {
+    const nameInput = document.getElementById('wheelCatModalName');
+    const name = (nameInput?.value || '').trim();
+    if (!name) { nameInput?.focus(); return; }
+
+    // ── وضع التعديل: تحديث قسم موجود بدلاً من إنشاء واحد جديد ──
+    if (_editingWheelCatId) {
+        const cat = wheelData.categories.find(c => c.id === _editingWheelCatId);
+        if (cat) {
+            cat.name = name;
+            cat.icon = _selectedWheelCatEmoji;
+            if (wheelData.activeCategoryId === cat.id) _wheelUpdateActiveCatLabel();
+        }
+        _editingWheelCatId = null;
+        saveWheelData(false);
+        closeAddWheelCategoryModal();
+        renderWheelCategories();
+        showToast(`✅ تم تحديث قسم "${name}"`);
+        return;
+    }
+
+    const newCat = _wheelDefaultCategory(name, _selectedWheelCatEmoji, []);
+    wheelData.categories.push(newCat);
+    saveWheelData(false);
+    closeAddWheelCategoryModal();
+    renderWheelCategories();
+    openWheelCategory(newCat.id);
+    showToast(`✅ تم إنشاء قسم "${name}"`);
+}
+
+let wheelSearchTerm = '';
+
 function renderWheelItemsList() {
     const list = document.getElementById('wheelItemsList');
     const badge = document.getElementById('wheelCountBadge');
     const emptyMsg = document.getElementById('wheelEmptyMsg');
     const spinBtn = document.getElementById('wheelSpinBtn');
+    const searchEmpty = document.getElementById('wheelSearchEmpty');
     if (!list) return;
 
+    const cat = _wheelActiveCategory();
+    const catItems = cat ? cat.items : [];
+
+    const term = wheelSearchTerm.trim().toLowerCase();
+    const visibleItems = term
+        ? catItems.filter(it => it.name.toLowerCase().includes(term))
+        : catItems;
+
     list.innerHTML = '';
-    wheelData.items.forEach((item, i) => {
+    visibleItems.forEach((item) => {
         const row = document.createElement('div');
         row.className = 'wheel-item-row';
+        row.dataset.itemId = item.id;
         row.innerHTML = `
             <span class="wheel-item-swatch" style="background:${item.color}"></span>
-            <span class="wheel-item-name"></span>
+            <span class="wheel-item-name" title="اضغط مرتين للتعديل"></span>
+            <button class="wheel-item-edit" title="تعديل" onclick="startEditWheelItem('${item.id}')">✏️</button>
             <button class="wheel-item-del" title="حذف" onclick="deleteWheelItem('${item.id}')">✕</button>
         `;
-        row.querySelector('.wheel-item-name').textContent = item.name;
+        const nameSpan = row.querySelector('.wheel-item-name');
+        nameSpan.textContent = item.name;
+        nameSpan.addEventListener('dblclick', () => startEditWheelItem(item.id));
         list.appendChild(row);
     });
 
-    if (badge) badge.textContent = `${wheelData.items.length} عنصر`;
-    const hasItems = wheelData.items.length > 0;
+    if (badge) badge.textContent = `${catItems.length} عنصر`;
+    const hasItems = catItems.length > 0;
     if (emptyMsg) emptyMsg.style.display = hasItems ? 'none' : 'block';
-    if (spinBtn) spinBtn.disabled = wheelData.items.length < 2;
+    if (spinBtn) spinBtn.disabled = catItems.length < 2;
+
+    if (searchEmpty) searchEmpty.style.display = (term && visibleItems.length === 0) ? 'block' : 'none';
+    list.style.display = (term && visibleItems.length === 0) ? 'none' : 'flex';
+}
+
+function filterWheelItems(value) {
+    wheelSearchTerm = value || '';
+    const clearBtn = document.getElementById('wheelSearchClearBtn');
+    if (clearBtn) clearBtn.style.display = wheelSearchTerm ? 'inline-flex' : 'none';
+    renderWheelItemsList();
+}
+
+function clearWheelSearch() {
+    wheelSearchTerm = '';
+    const input = document.getElementById('wheelSearchInput');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('wheelSearchClearBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    renderWheelItemsList();
 }
 
 function addWheelItem() {
+    const cat = _wheelActiveCategory();
+    if (!cat) return;
     const input = document.getElementById('wheelNewItemInput');
     const name = (input?.value || '').trim();
     if (!name) return;
-    wheelData.items.push({ id: _wheelUid(), name, color: _wheelColorFor(wheelData.items.length) });
+    cat.items.push({ id: _wheelUid(), name, color: _wheelColorFor(cat.items.length) });
     input.value = '';
     renderWheelItemsList();
     drawWheel();
@@ -5509,20 +5881,65 @@ function addWheelItem() {
 }
 
 function deleteWheelItem(id) {
-    wheelData.items = wheelData.items.filter(it => it.id !== id);
+    const cat = _wheelActiveCategory();
+    if (!cat) return;
+    cat.items = cat.items.filter(it => it.id !== id);
     // إعادة توزيع الألوان بالترتيب الجديد
-    wheelData.items.forEach((it, i) => it.color = _wheelColorFor(i));
+    cat.items.forEach((it, i) => it.color = _wheelColorFor(i));
     renderWheelItemsList();
     drawWheel();
     saveWheelData(false);
 }
 
+function startEditWheelItem(id) {
+    const cat = _wheelActiveCategory();
+    const item = cat?.items.find(it => it.id === id);
+    const row = document.querySelector(`.wheel-item-row[data-item-id="${id}"]`);
+    if (!item || !row || row.classList.contains('editing')) return;
+    const nameSpan = row.querySelector('.wheel-item-name');
+    if (!nameSpan) return;
+
+    row.classList.add('editing');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'wheel-item-edit-input';
+    input.value = item.name;
+    input.maxLength = 80;
+    nameSpan.replaceWith(input);
+    input.focus();
+    input.select();
+
+    let settled = false;
+    const commit = () => {
+        if (settled) return;
+        settled = true;
+        const newName = input.value.trim();
+        if (newName && newName !== item.name) {
+            item.name = newName;
+            saveWheelData(false);
+            drawWheel();
+        }
+        renderWheelItemsList();
+    };
+    const cancel = () => {
+        if (settled) return;
+        settled = true;
+        renderWheelItemsList();
+    };
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); commit(); }
+        else if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+    });
+    input.addEventListener('blur', commit);
+}
+
 function shuffleWheelItems() {
-    if (wheelData.items.length < 2) return;
+    const cat = _wheelActiveCategory();
+    if (!cat || cat.items.length < 2) return;
     // خوارزمية Fisher-Yates لخربطة الترتيب عشوائياً (كل لون يبقى مع عنصره)
-    for (let i = wheelData.items.length - 1; i > 0; i--) {
+    for (let i = cat.items.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [wheelData.items[i], wheelData.items[j]] = [wheelData.items[j], wheelData.items[i]];
+        [cat.items[i], cat.items[j]] = [cat.items[j], cat.items[i]];
     }
     renderWheelItemsList();
     drawWheel();
@@ -5531,9 +5948,10 @@ function shuffleWheelItems() {
 }
 
 function clearWheelItems() {
-    if (!wheelData.items.length) return;
-    if (!confirm('هل تريد حذف كل عناصر العجلة؟')) return;
-    wheelData.items = [];
+    const cat = _wheelActiveCategory();
+    if (!cat || !cat.items.length) return;
+    if (!confirm('هل تريد حذف كل عناصر هذا القسم؟')) return;
+    cat.items = [];
     wheelCurrentRotation = 0;
     const canvas = document.getElementById('wheelCanvas');
     if (canvas) canvas.style.transform = 'rotate(0deg)';
@@ -5579,11 +5997,13 @@ function importWheelTxtPaste() {
 }
 
 function _wheelImportLines(text) {
+    const cat = _wheelActiveCategory();
+    if (!cat) return;
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     if (!lines.length) { showToast('⚠️ لا توجد عناصر صالحة في النص'); return; }
-    const startIndex = wheelData.items.length;
+    const startIndex = cat.items.length;
     lines.forEach((name, i) => {
-        wheelData.items.push({ id: _wheelUid(), name, color: _wheelColorFor(startIndex + i) });
+        cat.items.push({ id: _wheelUid(), name, color: _wheelColorFor(startIndex + i) });
     });
     renderWheelItemsList();
     drawWheel();
@@ -5607,7 +6027,7 @@ function drawWheel() {
     const radius = size / 2;
     ctx.clearRect(0, 0, size, size);
 
-    const items = wheelData.items;
+    const items = _wheelActiveCategory()?.items || [];
     if (!items.length) {
         ctx.beginPath();
         ctx.arc(radius, radius, radius - 4 * dpr, 0, Math.PI * 2);
@@ -5731,7 +6151,7 @@ function _wheelEaseOutQuint(t) { return 1 - Math.pow(1 - t, 5); }
 
 function spinWheel() {
     if (wheelIsSpinning) return;
-    const items = wheelData.items;
+    const items = _wheelActiveCategory()?.items || [];
     if (items.length < 2) {
         showToast('⚠️ أضف عنصرين على الأقل لتدوير العجلة');
         return;
@@ -6045,7 +6465,7 @@ if ('serviceWorker' in navigator) {
 <!-- === مودال إضافة قسم جديد === -->
 <div id="modalAddCategory">
     <div class="cat-modal-box">
-        <h3>📂 إضافة قسم جديد</h3>
+        <h3 id="catModalTitle">📂 إضافة قسم جديد</h3>
         <div>
             <label>اسم القسم</label>
             <input type="text" id="catModalName" class="cat-modal-input" placeholder="مثال: أفلام، شخصيات..."
@@ -6070,7 +6490,40 @@ if ('serviceWorker' in navigator) {
         </div>
         <div class="cat-modal-actions">
             <button class="cat-modal-cancel" onclick="closeAddCategoryModal()">إلغاء</button>
-            <button class="cat-modal-confirm" onclick="confirmAddCategory()">✅ إضافة</button>
+            <button class="cat-modal-confirm" id="catModalConfirmBtn" onclick="confirmAddCategory()">✅ إضافة</button>
+        </div>
+    </div>
+</div>
+
+<!-- === مودال إضافة قسم جديد لعجلة الحظ === -->
+<div id="modalAddWheelCategory">
+    <div class="cat-modal-box">
+        <h3 id="wheelCatModalTitle">🎡 إضافة قسم جديد</h3>
+        <div>
+            <label>اسم القسم</label>
+            <input type="text" id="wheelCatModalName" class="cat-modal-input" placeholder="مثال: أكل، أفلام، مهام..."
+                   onkeypress="if(event.key==='Enter') confirmAddWheelCategory()">
+        </div>
+        <div>
+            <label>أيقونة القسم</label>
+            <div class="cat-emoji-row" id="wheelCatEmojiRow">
+                <span onclick="selectWheelCatEmoji(this)">🎡</span>
+                <span onclick="selectWheelCatEmoji(this)">🍕</span>
+                <span onclick="selectWheelCatEmoji(this)">🎬</span>
+                <span onclick="selectWheelCatEmoji(this)">🎮</span>
+                <span onclick="selectWheelCatEmoji(this)">📚</span>
+                <span onclick="selectWheelCatEmoji(this)">✅</span>
+                <span onclick="selectWheelCatEmoji(this)">🎁</span>
+                <span onclick="selectWheelCatEmoji(this)">⚽</span>
+                <span onclick="selectWheelCatEmoji(this)">🎵</span>
+                <span onclick="selectWheelCatEmoji(this)">🧠</span>
+                <span onclick="selectWheelCatEmoji(this)">🗺️</span>
+                <span onclick="selectWheelCatEmoji(this)">💰</span>
+            </div>
+        </div>
+        <div class="cat-modal-actions">
+            <button class="cat-modal-cancel" onclick="closeAddWheelCategoryModal()">إلغاء</button>
+            <button class="cat-modal-confirm" id="wheelCatModalConfirmBtn" onclick="confirmAddWheelCategory()">✅ إضافة</button>
         </div>
     </div>
 </div>
